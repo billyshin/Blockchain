@@ -36,8 +36,8 @@ class Blockchain:
     def proof_of_work(self, previous_proof):
         new_proof = 1
         check_proof = False
-        while not check_proof:
-            hash_operation = hashlib.sha256(str(new_proof ** 2 - previous_proof ** 2).encode()).hexdigest()
+        while check_proof is False:
+            hash_operation = hashlib.sha256(str(new_proof**2 - previous_proof**2).encode()).hexdigest()
             if hash_operation[:4] == '0000':
                 check_proof = True
             else:
@@ -63,7 +63,7 @@ class Blockchain:
             previous_block = block
             block_index += 1
         return True
-
+    
     def add_transaction(self, sender, receiver, amount):
         self.transactions.append({
             'sender': sender,
@@ -72,11 +72,11 @@ class Blockchain:
         })
         previous_block = self.get_previous_block()
         return previous_block['index'] + 1
-
+    
     def add_node(self, address):
         parsed_url = urlparse(address)
         self.nodes.add(parsed_url.netloc)
-
+    
     def replace_chain(self):
         network = self.nodes
         longest_chain = None
@@ -93,3 +93,50 @@ class Blockchain:
             self.chain = longest_chain
             return True
         return False
+
+
+# ============================== Start mining our Blockchain ============================== 
+# Creating a Web App
+app = Flask(__name__)
+
+# Creating an address for the node on Port 5000
+node_address = str(uuid4()).replace('-', '')
+
+# Creating a Blockchain
+blockchain = Blockchain()
+
+# Mining a new block
+@app.route('/mine_block', methods = ['GET'])
+def mine_block():
+    previous_block = blockchain.get_previous_block()
+    previous_proof = previous_block['proof']
+    proof = blockchain.proof_of_work(previous_proof)
+    previous_hash = blockchain.hash(previous_block)
+    blockchain.add_transaction(sender = node_address, receiver = 'Hadelin', amount = 1)
+    block = blockchain.create_block(proof, previous_hash)
+    response = {'message': 'You just mined a block successfully!',
+                'index': block['index'],
+                'timestamp': block['timestamp'],
+                'proof': block['proof'],
+                'previous_hash': block['previous_hash'],
+                'transactions': block['transactions']}
+    return jsonify(response), 200
+
+
+# Getting the full Blockchain
+@app.route('/get_chain', methods = ['GET'])
+def get_chain():
+    response = {'chain': blockchain.chain,
+                'length': len(blockchain.chain)}
+    return jsonify(response), 200
+
+
+# Checking if the Blockchain is valid
+@app.route('/is_valid', methods = ['GET'])
+def is_valid():
+    is_valid = blockchain.is_chain_valid(blockchain.chain)
+    if is_valid:
+        response = {'message': 'The Blockchain is valid.'}
+    else:
+        response = {'message': 'The Blockchain is not valid.'}
+    return jsonify(response), 200

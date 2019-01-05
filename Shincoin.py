@@ -1,5 +1,5 @@
 """
-Simple module for a cryptocurrency
+Simple module for a cryptocurrency (Shincoin)
 """
 
 import datetime
@@ -151,4 +151,19 @@ def add_transaction():
         return 'Some elements of the transaction are missing', 400
     index = blockchain.add_transaction(json['sender'], json['receiver'], json['amount'])
     response = {'message': f'This transaction will be added to Block {index}'}
+    return jsonify(response), 201
+
+
+# ============================== Decentralize our Blockchain ============================== 
+# Connecting new nodes
+@app.route('/connect_node', methods = ['POST'])
+def connect_node():
+    json = request.get_json()
+    nodes = json.get('nodes')
+    if nodes is None:
+        return "No node", 400
+    for node in nodes:
+        blockchain.add_node(node)
+    response = {'message': 'All the nodes are now connected. The Shincoin Blockchain now contains the following nodes:',
+                'total_nodes': list(blockchain.nodes)}
     return jsonify(response), 201

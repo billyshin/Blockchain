@@ -60,9 +60,9 @@ Important: All the node in the decentralized blockchain must have the same block
 
  We are going to use three nodes to show the demo of decentralized blockchain:
  
-    python Shincoin_node_50001.py
-    python Shincoin_node_50002.py
-    python Shincoin_node_50003.py
+    python Shincoin_node_1.py
+    python Shincoin_node_2.py
+    python Shincoin_node_3.py
  
  ### Get the chain to see if the genesis block was well created
  
